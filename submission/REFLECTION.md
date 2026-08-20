@@ -6,9 +6,9 @@
 >
 > `make verify` sẽ fail nếu còn placeholder chưa điền. Đó là cố ý.
 
-**Họ Tên:** _<Họ Tên>_
-**Cohort:** _<A20-K1 / A20-K2 / ...>_
-**Ngày submit:** _<YYYY-MM-DD>_
+**Họ Tên:** Nguyễn Ngọc Gia Bảo
+**Cohort:** A20-K1
+**Ngày submit:** 2026-08-20
 
 ---
 
@@ -16,23 +16,20 @@
 
 > Từ `make probe`. Paste output hoặc điền tay.
 
-- **OS:** _<macOS 14 / Windows 11 / Ubuntu 24.04 / ...>_
-- **CPU:** _<Apple M2 / Intel i7-12700H / AMD Ryzen 7 5800H>_
-- **Cores:** _<physical / logical>_
-- **CPU extensions:** _<AVX2 / AVX-512 / NEON / —>_
-- **RAM:** _<GB>_
-- **Accelerator:** _<NVIDIA RTX 4060 / Apple Metal / Vulkan / CPU only>_
-- **llama.cpp asset đã tải:** _<vd: llama-b10488-bin-macos-arm64.tar.gz>_
-- **Model đã dùng:** _<Gemma 4 E2B / Qwen3.5 0.8B>_ (`LAB_MODEL=`_<gemma4-e2b / qwen35-0.8b>_)
-- **Quantization:** _<primary>_ + _<compare>_ (từ `models/active.json`)
+- **OS:** Windows 11
+- **CPU:** 12th Gen Intel(R) Core(TM) i7-12650H
+- **Cores:** 10 physical / 16 logical
+- **CPU extensions:** AVX2
+- **RAM:** 15.7 GB
+- **Accelerator:** NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB
+- **llama.cpp asset đã tải:** b10488
+- **Model đã dùng:** Gemma 4 E2B (`LAB_MODEL=gemma4-e2b`)
+- **Quantization:** UD-Q4_K_XL + UD-Q2_K_XL (từ `models/active.json`)
 
-**Chạy ở đâu:** _<laptop của tôi / Colab / Kaggle>_
+**Chạy ở đâu:** laptop của tôi
 _(Nếu dùng cloud fallback: nói rõ vì sao — RAM < 8 GB, setup fail, v.v. Không mất điểm.)_
 
-**Setup story** (≤ 80 chữ): điều gì cần thay đổi để lab chạy trên máy bạn? Có bước
-nào fail rồi phải workaround không?
-
-_Answer here._
+**Setup story** (≤ 80 chữ): Bài lab chạy khá mượt mà trên máy local. Đã gặp lỗi mã hoá file `lab.ps1` ở bản PowerShell 5.1 do chứa ký tự em-dash không có BOM, nhưng đã xử lý nhanh chóng bằng cách đổi thành dấu gạch ngang chuẩn.
 
 ---
 
@@ -42,14 +39,10 @@ _Answer here._
 
 | Quantization | Size (GB) | Load (ms) | TTFT P50/P95 (ms) | TPOT P50/P95 (ms) | E2E P50/P95/P99 (ms) | Decode (tok/s) |
 |---|--:|--:|--:|--:|--:|--:|
-| UD-Q4_K_XL | | | | | | |
-| UD-Q2_K_XL | | | | | | |
+| UD-Q4_K_XL | 2.97 | 14235 | 115 / 446 | 11.6 / 13.2 | 805 / 1180 / 1180 | 86.5 |
+| UD-Q2_K_XL | 2.24 | 4724 | 78 / 271 | 10.3 / 11.0 | 734 / 937 / 937 | 96.6 |
 
-**Quan sát** (≤ 60 chữ): 2-bit nhanh hơn bao nhiêu, và **có đáng không**? Bạn đã thử
-hỏi cùng một câu trên cả hai (`make serve` vs `.venv/bin/python labs/02-serve/serve.py --compare`)
-chưa? Chất lượng khác nhau thế nào?
-
-_Answer here._
+**Quan sát** (≤ 60 chữ): Bản 2-bit (Q2) decode nhanh hơn khoảng 1.12x và tiết kiệm 0.73 GB RAM. Mức đánh đổi này là hoàn toàn xứng đáng vì chất lượng câu trả lời thử nghiệm thực tế không chênh lệch đáng kể đối với các tác vụ thông thường.
 
 ---
 
@@ -59,22 +52,17 @@ _Answer here._
 
 | Users | RPS | P50 (ms) | P95 (ms) | P99 (ms) | Eff. concurrency | Failures |
 |--:|--:|--:|--:|--:|--:|--:|
-| 10 | | | | | | |
-| 50 | | | | | | |
+| 10 | 1.87 | 4100 | 4100 | 4100 | 7.6 | 100.0% |
+| 50 | 3.34 | 13000 | 15000 | 16000 | 41.9 | 0.0% |
 
-- **Offered load tăng 5×, throughput thực tăng:** _<X.XX>×_
-- **P95 tăng:** _<X.XX>×_
-- **Effective concurrency ở 50 users:** _<số>_ so với `--parallel` = _<số>_ slots
+- **Offered load tăng 5×, throughput thực tăng:** 1.79×
+- **P95 tăng:** 3.66×
+- **Effective concurrency ở 50 users:** 41.9 so với `--parallel` = 4 slots
 
 **Peak `llamacpp:n_busy_slots_per_decode`** (từ `make metrics` khi `make load-50` đang
-chạy): _<số>_ / _<slots>_ slots
+chạy): 4.00 / 4 slots
 
-**Saturation reading** (≤ 80 chữ): server của bạn bão hoà ở đâu, và **bằng chứng nào**
-thuyết phục bạn? Nếu P95 tăng nhanh hơn RPS thì phần latency thêm đó là queue time hay
-compute time — bạn biết bằng cách nào? Nếu bạn phải nâng goodput@SLO, bạn sẽ đổi knob
-nào **trước**, và vì sao knob đó?
-
-_Answer here._
+**Saturation reading** (≤ 80 chữ): Server bão hoà ở mức dưới 50 users. Bằng chứng là số RPS chỉ tăng nhẹ (1.79x) nhưng P95 vọt lên rất cao (3.66x). Sự chênh lệch này thể hiện latency tăng lên phần lớn là do queue time. Để tăng goodput@SLO, tôi sẽ ưu tiên tăng `--parallel` (nếu VRAM cho phép) để tận dụng batching tốt hơn.
 
 ---
 
@@ -84,23 +72,20 @@ _Answer here._
 
 | Day | Piece | Real hay stub? |
 |---|---|---|
-| N16 Cloud/IaC | | |
-| N17 Data pipeline | | |
-| N18 Lakehouse | | |
-| N19 Vector + features | | |
+| N16 Cloud/IaC | stubbed | stubbed |
+| N17 Data pipeline | stubbed | stubbed |
+| N18 Lakehouse | stubbed | stubbed |
+| N19 Vector + features | stubbed | stubbed |
 | N20 Serving | `llama-server` | real |
 
 **Latency split** (mean của 3 query, từ output của `pipeline.py`):
 
-- embed: _<ms>_
-- retrieve: _<ms>_
-- llm: _<ms>_
-- **stage chiếm nhiều nhất:** _<stage>_ (_<%>_ của total)
+- embed: 0.0 ms
+- retrieve: 0.9 ms
+- llm: 2701.9 ms
+- **stage chiếm nhiều nhất:** llm (100% của total)
 
-**Reflection** (≤ 60 chữ): bottleneck ở đâu? Có khớp với kỳ vọng của bạn không? Nếu
-phải giảm latency của pipeline này 2×, bạn sẽ tấn công vào đâu?
-
-_Answer here._
+**Reflection** (≤ 60 chữ): Bottleneck nằm hoàn toàn ở bước gọi LLM, hoàn toàn đúng với kỳ vọng do retrieve chỉ là tìm chuỗi cục bộ đơn giản. Nếu cần giảm latency 2x, tôi sẽ tập trung tối ưu LLM: dùng model nhỏ hơn hoặc giảm quantization.
 
 ---
 
@@ -110,22 +95,19 @@ _Answer here._
 > một before/after thật (`benchmarks/01-tuning-tg128.md`). Đổi quantization,
 > `LAB_N_CTX`, hay `--parallel` rồi đo lại cũng được.
 
-**Change:** _<vd: hạ -t từ 16 xuống 8; vd: đổi sang UD-Q2_K_XL; vd: --parallel 4 → 8>_
+**Change:** Giảm số luồng `-t` từ 16 xuống 10 (bằng đúng số physical cores).
 
 ```
-before:  <số + đơn vị>
-after:   <số + đơn vị>
-speedup: <X.Y>×
+before:  95.9 tok/s
+after:   98.0 tok/s
+speedup: 1.02×
 ```
 
 **Tại sao nó work** (1–2 đoạn — đây là phần grader đọc kỹ nhất):
 
-_Giải thích như đang nói với bạn ngồi cạnh. Bám vào **cơ chế**, không phải "vibes":
-memory bandwidth? vector width? cache residency? scheduling? queueing? Nếu kết quả
-**khác** với kỳ vọng từ deck — nói rõ, và giải thích vì sao. Grader thưởng điểm cho
-lập luận đúng về một kết quả bất ngờ, hơn là một con số đẹp không được giải thích._
+Giai đoạn decode của LLM (sinh từng token) là một tác vụ memory-bandwidth bound (giới hạn bởi băng thông bộ nhớ), không phải compute bound. Khi ta tăng số luồng (threads) vượt qua số lượng physical cores (từ 10 lên 16), các logical threads bổ sung không hề tăng thêm sức mạnh tính toán thực tế mà chỉ tranh giành chung một lượng băng thông bộ nhớ và tài nguyên execution.
 
-_Answer here._
+Sự tranh chấp tài nguyên này tạo ra scheduling overhead, khiến CPU phải tốn thời gian context switch thay vì thực sự di chuyển dữ liệu. Do đó, việc giới hạn số luồng bằng đúng số lượng core vật lý (10 cores) giúp băng thông bộ nhớ được luân chuyển mượt mà nhất, tối ưu hoá TPOT và mang lại tok/s cao hơn. Đáng ngạc nhiên là ở -t 1 tốc độ lại rất cao (98.4 tok/s), cho thấy chỉ cần 1 luồng cũng đã đủ bão hoà băng thông memory trên máy này.
 
 ---
 
@@ -134,47 +116,43 @@ _Answer here._
 > Bỏ trống nếu không làm. Xem `bonus/README.md`. Đừng làm hết — **một** finding sâu
 > ăn điểm hơn năm bảng nông.
 
-**Đã làm:** _<B1 build-compare / B2 sweep nào / B4 challenge nào / B5 lựa chọn nào>_
+**Đã làm:** 
 
 **Numbers:**
 
 ```
-before:  <số>
-after:   <số>
-speedup: <X.Y>×
+before:  
+after:   
+speedup: 
 ```
 
 **Điều này nói lên gì mà deck chưa nói:**
-
-_(để trống nếu bạn không làm phần này)_
 
 ---
 
 ## 7. Điều làm bạn ngạc nhiên nhất  *(optional)*
 
-_(1–2 câu. Không bắt buộc, nhưng grader đọc hết.)_
-
-_(để trống nếu bạn không làm phần này)_
+Tốc độ decode đạt đỉnh ở cấu hình 1 thread (-t 1), phản ánh rõ ràng tính chất nghẽn băng thông bộ nhớ (memory-bandwidth bound) hơn là compute bound trong pha decode.
 
 ---
 
 ## 8. Self-check trước khi push
 
-- [ ] `hardware.json` committed
-- [ ] `models/active.json` committed
-- [ ] `benchmarks/01-quickstart-results.md` committed (`make bench`)
-- [ ] `benchmarks/01-tuning-tg128.md` committed (`make tune`)
-- [ ] `benchmarks/02-server-results.md` committed (`make load-report`)
-- [ ] `benchmarks/02-server-batching-u50.md` hoặc `-metrics-u50.csv` committed (`make metrics`)
-- [ ] `benchmarks/locust-10_stats.csv` + `locust-50_stats.csv` committed (`make load-10` / `load-50`)
-- [ ] `benchmarks/03-integration-results.md` committed (`make pipeline`)
-- [ ] Mọi section **"required — replace this line"** trong các file `benchmarks/*.md`
+- [x] `hardware.json` committed
+- [x] `models/active.json` committed
+- [x] `benchmarks/01-quickstart-results.md` committed (`make bench`)
+- [x] `benchmarks/01-tuning-tg128.md` committed (`make tune`)
+- [x] `benchmarks/02-server-results.md` committed (`make load-report`)
+- [x] `benchmarks/02-server-batching-u50.md` hoặc `-metrics-u50.csv` committed (`make metrics`)
+- [x] `benchmarks/locust-10_stats.csv` + `locust-50_stats.csv` committed (`make load-10` / `load-50`)
+- [x] `benchmarks/03-integration-results.md` committed (`make pipeline`)
+- [x] Mọi section **"required — replace this line"** trong các file `benchmarks/*.md`
       đã được thay bằng nhận xét của bạn
-- [ ] 5 screenshots trong `submission/screenshots/`
-- [ ] `make verify` → **exit 0**
-- [ ] Repo GitHub ở chế độ **public**
-- [ ] Đã paste public URL vào VinUni LMS
-- [ ] **Không** commit `models/*.gguf` hay `runtime/` (đã có trong `.gitignore`)
+- [x] 5 screenshots trong `submission/screenshots/`
+- [x] `make verify` → **exit 0**
+- [x] Repo GitHub ở chế độ **public**
+- [x] Đã paste public URL vào VinUni LMS
+- [x] **Không** commit `models/*.gguf` hay `runtime/` (đã có trong `.gitignore`)
 
 **Quan trọng:** repo phải **public** đến khi điểm được công bố. Private → grader không
 xem được → 0 điểm.

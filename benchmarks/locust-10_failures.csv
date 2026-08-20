@@ -1,0 +1,3 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+POST,long-rag,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",8,2026-08-20T09:31:04Z,2026-08-20T09:31:28Z
+POST,short,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",54,2026-08-20T09:31:03Z,2026-08-20T09:31:32Z
